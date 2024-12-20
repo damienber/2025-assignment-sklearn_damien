@@ -61,7 +61,7 @@ from sklearn.utils.validation import validate_data
 from sklearn.metrics.pairwise import pairwise_distances
 
 
-class KNearestNeighbors(BaseEstimator, ClassifierMixin):
+class KNearestNeighbors(ClassifierMixin, BaseEstimator):
     """KNearestNeighbors classifier."""
 
     def __init__(self, n_neighbors=1):  # noqa: D107
@@ -70,7 +70,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
     def fit(self, X, y):
         """Fitting function.
 
-         Parameters
+        Parameters
         ----------
         X : ndarray, shape (n_samples, n_features)
             Data to train the model.
@@ -78,7 +78,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Labels associated with the training data.
 
         Returns
-        ----------
+        -------
         self : instance of KNearestNeighbors
             The current instance of the classifier
         """
@@ -93,7 +93,7 @@ class KNearestNeighbors(BaseEstimator, ClassifierMixin):
             Data to predict on.
 
         Returns
-        ----------
+        -------
         y : ndarray, shape (n_test_samples,)
             Predicted class labels for each test data sample.
         """
