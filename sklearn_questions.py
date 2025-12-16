@@ -74,11 +74,14 @@ from sklearn.utils.validation import validate_data
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 
-
 class KNearestNeighbors(ClassifierMixin, BaseEstimator):
     """KNearestNeighbors classifier."""
+    
+    
     def __init__(self, n_neighbors=1):  # noqa: D107
         self.n_neighbors = n_neighbors
+    
+    
     def fit(self, X, y):
         """Fitting function.
         Parameters
@@ -99,6 +102,7 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         self.y_ = y
         self.n_features_in_ = X.shape[1]
         return self
+
 
     def predict(self, X):
         """Predict function.
@@ -125,6 +129,7 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
             y_pred[i] = modes[np.argmax(counts)]
 
         return y_pred
+
 
     def score(self, X, y):
         """Calculate the score of the prediction.
