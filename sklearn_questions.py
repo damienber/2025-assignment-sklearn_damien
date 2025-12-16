@@ -1,5 +1,4 @@
 """Assignment - making a sklearn estimator and cv splitter.
-
 The goal of this assignment is to implement by yourself:
 - a scikit-learn estimator for the KNearestNeighbors for classification
   tasks and check that it is working properly.
@@ -64,6 +63,11 @@ Hints
 from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
+"""Custom scikit-learn utilities.
+This module provides a custom K-Nearest Neighbors classifier and a
+time-based cross-validation splitter.
+"""
+
 import numpy as np
 import pandas as pd
 
@@ -73,29 +77,26 @@ from sklearn.utils.validation import check_is_fitted, validate_data
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 
-
 class KNearestNeighbors(ClassifierMixin, BaseEstimator):
     """K-Nearest Neighbors classifier.
-
     A simple k-nearest neighbors classifier using Euclidean distance.
-
     Parameters
     ----------
     n_neighbors : int, default=1
         Number of neighbors to use for prediction.
     """
 
+    
     def __init__(self, n_neighbors=1):
-    """Initialize the KNearestNeighbors classifier.
+        """Initialize the KNN classifier.
+        Parameters
+        ----------
+        n_neighbors : int, default=1
+            Number of neighbors to use for prediction.
+        """
+        self.n_neighbors = n_neighbors
 
-    Parameters
-    ----------
-    n_neighbors : int, default=1
-        Number of neighbors to use.
-    """
-    self.n_neighbors = n_neighbors
-
-
+    
     def fit(self, X, y):
         """Fit the model according to the given training data."""
         X, y = validate_data(self, X=X, y=y)
@@ -106,22 +107,22 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         self.n_features_in_ = X.shape[1]
         return self
 
+    
     def predict(self, X):
         """Predict the class labels for the provided data."""
+        """Predict class labels for the provided data."""
         check_is_fitted(self)
         X = validate_data(self, X=X, reset=False)
 
         distances = pairwise_distances(X, self.X_)
         neigh_indices = np.argsort(distances, axis=1)[:, :self.n_neighbors]
         neigh_labels = self.y_[neigh_indices]
-
         y_pred = np.empty(X.shape[0], dtype=self.y_.dtype)
         for i in range(X.shape[0]):
             modes, counts = np.unique(neigh_labels[i], return_counts=True)
             y_pred[i] = modes[np.argmax(counts)]
-
         return y_pred
-
+    
     def score(self, X, y):
         """Return the mean accuracy on the given test data and labels."""
         check_is_fitted(self)
@@ -131,58 +132,59 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
 
 class MonthlySplit(BaseCrossValidator):
     """MonthlySplit cross-validator."""
+    """Monthly-based cross-validation splitter."""
 
+    
     def __init__(self, time_col='index'):
+        """Initialize the MonthlySplit cross-validator.
+        Parameters
+        ----------
+        time_col : str, default='index'
+            Column containing datetime information or 'index'.
+        """
         self.time_col = time_col
 
+    
     def get_n_splits(self, X, y=None, groups=None):
-    """Return the number of splitting iterations."""
+        """Return the number of splitting iterations."""
         if self.time_col == 'index':
             dates = X.index
         else:
             if self.time_col not in X.columns:
                 raise ValueError(f"Column {self.time_col} not found in X")
             dates = X[self.time_col]
-
         if not pd.api.types.is_datetime64_any_dtype(dates):
             raise ValueError(
                 f"The column {self.time_col} is not a datetime."
             )
-
         dates = pd.Index(pd.to_datetime(dates))
         unique_months = dates.to_period('M').unique()
         return max(0, len(unique_months) - 1)
 
-    def get_n_splits(self, X, y=None, groups=None):
-    """Return the number of splitting iterations."""
+
+    def split(self, X, y=None, groups=None):
+        """Generate indices to split data into training and test sets."""
         if self.time_col == 'index':
             dates = X.index
         else:
             if self.time_col not in X.columns:
                 raise ValueError(f"Column {self.time_col} not found in X")
             dates = X[self.time_col]
-
         if not pd.api.types.is_datetime64_any_dtype(dates):
             raise ValueError(
                 f"The column {self.time_col} is not a datetime."
             )
-
         dates = pd.Index(pd.to_datetime(dates))
         months = dates.to_period('M')
         unique_months = sorted(months.unique())
-
         n_splits = self.get_n_splits(X, y, groups)
         if n_splits == 0:
             return
-
         for i in range(n_splits):
             train_month = unique_months[i]
             test_month = unique_months[i + 1]
-
             train_mask = months == train_month
             test_mask = months == test_month
-
             idx_train = np.where(train_mask)[0]
             idx_test = np.where(test_mask)[0]
-
             yield idx_train, idx_test
