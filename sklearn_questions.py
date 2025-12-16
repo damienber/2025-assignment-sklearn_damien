@@ -177,6 +177,7 @@ class MonthlySplit(BaseCrossValidator):
 
     def get_n_splits(self, X, y=None, groups=None):
         """Return the number of splitting iterations in the cross-validator.
+        """
         """Return the number of splitting iterations.
         Parameters
         ----------
@@ -211,9 +212,6 @@ class MonthlySplit(BaseCrossValidator):
         dates = pd.Index(pd.to_datetime(dates))
         unique_months = dates.to_period('M').unique()
         return len(unique_months) - 1
-
-    def split(self, X, y, groups=None):
-        """Generate indices to split data into training and test set.
     def split(self, X, y=None, groups=None):
         """Generate indices to split data.
         Parameters
