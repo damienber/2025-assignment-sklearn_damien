@@ -1,4 +1,5 @@
 """Assignment - making a sklearn estimator and cv splitter.
+
 The goal of this assignment is to implement by yourself:
 - a scikit-learn estimator for the KNearestNeighbors for classification
   tasks and check that it is working properly.
@@ -85,7 +86,15 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
     """
 
     def __init__(self, n_neighbors=1):
-        self.n_neighbors = n_neighbors
+    """Initialize the KNearestNeighbors classifier.
+
+    Parameters
+    ----------
+    n_neighbors : int, default=1
+        Number of neighbors to use.
+    """
+    self.n_neighbors = n_neighbors
+
 
     def fit(self, X, y):
         """Fit the model according to the given training data."""
@@ -127,6 +136,7 @@ class MonthlySplit(BaseCrossValidator):
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
+    """Return the number of splitting iterations."""
         if self.time_col == 'index':
             dates = X.index
         else:
@@ -143,7 +153,8 @@ class MonthlySplit(BaseCrossValidator):
         unique_months = dates.to_period('M').unique()
         return max(0, len(unique_months) - 1)
 
-    def split(self, X, y=None, groups=None):
+    def get_n_splits(self, X, y=None, groups=None):
+    """Return the number of splitting iterations."""
         if self.time_col == 'index':
             dates = X.index
         else:
