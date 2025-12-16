@@ -110,4 +110,21 @@ class MonthlySplit(BaseCrossValidator):
             )
 
         dates = pd.Index(pd.to_datetime(dates))
-        mont
+        months = dates.to_period('M')
+        unique_months = sorted(months.unique())
+
+        n_splits = self.get_n_splits(X, y, groups)
+        if n_splits == 0:
+            return
+
+        for i in range(n_splits):
+            train_month = unique_months[i]
+            test_month = unique_months[i + 1]
+
+            train_mask = months == train_month
+            test_mask = months == test_month
+
+            idx_train = np.where(train_mask)[0]
+            idx_test = np.where(test_mask)[0]
+
+            yield idx_train, idx_test
