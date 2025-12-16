@@ -75,25 +75,33 @@ from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 
 class KNearestNeighbors(ClassifierMixin, BaseEstimator):
-    """KNearestNeighbors classifier."""
-    
-    
-    def __init__(self, n_neighbors=1):  # noqa: D107
+    """KNearestNeighbors classifier.
+
+    A simple k-nearest neighbors classifier using Euclidean distance.
+
+    Parameters
+    ----------
+    n_neighbors : int, default=1
+        Number of neighbors to use for prediction.
+    """
+
+    def __init__(self, n_neighbors=1):
         self.n_neighbors = n_neighbors
-    
-    
+
     def fit(self, X, y):
-        """Fitting function.
+        """Fit the model according to the given training data.
+
         Parameters
         ----------
-        X : ndarray, shape (n_samples, n_features)
-            Data to train the model.
-        y : ndarray, shape (n_samples,)
-            Labels associated with the training data.
+        X : array-like of shape (n_samples, n_features)
+            Training data.
+        y : array-like of shape (n_samples,)
+            Target values.
+
         Returns
         -------
-        self : instance of KNearestNeighbors
-            The current instance of the classifier
+        self : object
+            Fitted estimator.
         """
         X, y = validate_data(self, X=X, y=y)
         check_classification_targets(y)
@@ -103,19 +111,19 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         self.n_features_in_ = X.shape[1]
         return self
 
-
     def predict(self, X):
-        """Predict function.
+        """Predict the class labels for the provided data.
+
         Parameters
         ----------
-        X : ndarray, shape (n_test_samples, n_features)
-            Data to predict on.
+        X : array-like of shape (n_samples, n_features)
+            Test samples.
+
         Returns
         -------
-        y : ndarray, shape (n_test_samples,)
-            Predicted class labels for each test data sample.
+        y : ndarray of shape (n_samples,)
+            Class labels for each data sample.
         """
-        y_pred = np.zeros(X.shape[0])
         check_is_fitted(self)
         X = validate_data(self, X=X, reset=False)
 
@@ -130,73 +138,59 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
 
         return y_pred
 
-
     def score(self, X, y):
-        """Calculate the score of the prediction.
+        """Return the mean accuracy on the given test data and labels.
+
         Parameters
         ----------
-        X : ndarray, shape (n_samples, n_features)
-            Data to score on.
-        y : ndarray, shape (n_samples,)
-            target values.
+        X : array-like of shape (n_samples, n_features)
+            Test samples.
+        y : array-like of shape (n_samples,)
+            True labels for X.
+
         Returns
-        ----------
         -------
         score : float
-            Accuracy of the model computed for the (X, y) pairs.
+            Mean accuracy of self.predict(X) wrt. y.
         """
-        return 0.
+        check_is_fitted(self)
         X, y = validate_data(self, X=X, y=y, reset=False)
         return np.mean(self.predict(X) == y)
+    
+    
+    class MonthlySplit(BaseCrossValidator):
+    """MonthlySplit cross-validator.
 
+    Provides train/test indices to split data based on successive months.
+    Each split uses one month for training and the next for testing.
 
-class MonthlySplit(BaseCrossValidator):
-    """CrossValidator based on monthly split.
-    Split data based on the given `time_col` (or default to index). Each split
-    corresponds to one month of data for the training and the next month of
-    data for the test.
-    Split data based on the given `time_col` (or default to index). Each
-    split corresponds to one month of data for the training and the next
-    month of data for the test.
     Parameters
     ----------
-    time_col : str, defaults to 'index'
-        Column of the input DataFrame that will be used to split the data. This
-        column should be of type datetime. If split is called with a DataFrame
-        for which this column is not a datetime, it will raise a ValueError.
-        To use the index as column just set `time_col` to `'index'`.
+    time_col : str, default='index'
         Column of the input DataFrame that will be used to split the data.
-        This column should be of type datetime. If split is called with a
-        DataFrame for which this column is not a datetime, it will raise a
-        ValueError. To use the index as column just set `time_col` to
-        `'index'`.
+        Should be of type datetime. If 'index', the DataFrame index is used.
     """
 
-    def __init__(self, time_col='index'):  # noqa: D107
+    def __init__(self, time_col='index'):
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
         """Return the number of splitting iterations in the cross-validator.
-        """
-        """Return the number of splitting iterations.
+
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples
-            and `n_features` is the number of features.
-            Training data.
-        y : array-like of shape (n_samples,)
+        X : pandas.DataFrame
+            Data to split.
+        y : array-like, default=None
             Always ignored, exists for compatibility.
-            Always ignored.
-        groups : array-like of shape (n_samples,)
+        groups : array-like, default=None
             Always ignored, exists for compatibility.
-            Always ignored.
+
         Returns
         -------
         n_splits : int
-            The number of splits.
+            Number of splits.
         """
-        return 0
         if self.time_col == 'index':
             dates = X.index
         else:
@@ -211,30 +205,26 @@ class MonthlySplit(BaseCrossValidator):
 
         dates = pd.Index(pd.to_datetime(dates))
         unique_months = dates.to_period('M').unique()
-        return len(unique_months) - 1
+        return max(0, len(unique_months) - 1)
+
     def split(self, X, y=None, groups=None):
-        """Generate indices to split data.
+        """Generate indices to split data into training and test set.
+
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
-            Training data, where `n_samples` is the number of samples
-            and `n_features` is the number of features.
-            Training data.
-        y : array-like of shape (n_samples,)
+        X : pandas.DataFrame
+            Data to split.
+        y : array-like, default=None
             Always ignored, exists for compatibility.
-            Always ignored.
-        groups : array-like of shape (n_samples,)
+        groups : array-like, default=None
             Always ignored, exists for compatibility.
-            Always ignored.
+
         Yields
         ------
-        -------
-        idx_train : ndarray
+        train : ndarray
             The training set indices for that split.
-            The training set indices.
-        idx_test : ndarray
+        test : ndarray
             The testing set indices for that split.
-            The testing set indices.
         """
         if self.time_col == 'index':
             dates = X.index
@@ -252,15 +242,11 @@ class MonthlySplit(BaseCrossValidator):
         months = dates.to_period('M')
         unique_months = sorted(months.unique())
 
-        n_samples = X.shape[0]
         n_splits = self.get_n_splits(X, y, groups)
+        if n_splits == 0:
+            return
 
         for i in range(n_splits):
-            idx_train = range(n_samples)
-            idx_test = range(n_samples)
-            yield (
-                idx_train, idx_test
-            )
             train_month = unique_months[i]
             test_month = unique_months[i + 1]
 
@@ -271,3 +257,4 @@ class MonthlySplit(BaseCrossValidator):
             idx_test = np.where(test_mask)[0]
 
             yield idx_train, idx_test
+
