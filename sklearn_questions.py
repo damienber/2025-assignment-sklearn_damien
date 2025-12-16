@@ -72,6 +72,7 @@ from sklearn.utils.validation import check_is_fitted, validate_data
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 
+
 class KNearestNeighbors(ClassifierMixin, BaseEstimator):
     """K-Nearest Neighbors classifier.
 
@@ -83,26 +84,11 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         Number of neighbors to use for prediction.
     """
 
-
     def __init__(self, n_neighbors=1):
         self.n_neighbors = n_neighbors
 
-    
     def fit(self, X, y):
-        """Fit the model according to the given training data.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Training data.
-        y : array-like of shape (n_samples,)
-            Target values.
-
-        Returns
-        -------
-        self : object
-            Fitted estimator.
-        """
+        """Fit the model according to the given training data."""
         X, y = validate_data(self, X=X, y=y)
         check_classification_targets(y)
         self.classes_ = np.unique(y)
@@ -111,20 +97,8 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         self.n_features_in_ = X.shape[1]
         return self
 
-    
     def predict(self, X):
-        """Predict the class labels for the provided data.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Test samples.
-
-        Returns
-        -------
-        y : ndarray of shape (n_samples,)
-            Class labels for each data sample.
-        """
+        """Predict the class labels for the provided data."""
         check_is_fitted(self)
         X = validate_data(self, X=X, reset=False)
 
@@ -139,61 +113,20 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
 
         return y_pred
 
-    
     def score(self, X, y):
-        """Return the mean accuracy on the given test data and labels.
-
-        Parameters
-        ----------
-        X : array-like of shape (n_samples, n_features)
-            Test samples.
-        y : array-like of shape (n_samples,)
-            True labels for X.
-
-        Returns
-        -------
-        score : float
-            Mean accuracy of self.predict(X) wrt. y.
-        """
+        """Return the mean accuracy on the given test data and labels."""
         check_is_fitted(self)
         X, y = validate_data(self, X=X, y=y, reset=False)
         return np.mean(self.predict(X) == y)
 
+
 class MonthlySplit(BaseCrossValidator):
-    """MonthlySplit cross-validator.
+    """MonthlySplit cross-validator."""
 
-    Provides train/test indices to split data based on successive months.
-    Each split uses one month for training and the next for testing.
-
-    Parameters
-    ----------
-    time_col : str, default='index'
-        Column of the input DataFrame that will be used to split the data.
-        Should be of type datetime. If 'index', the DataFrame index is used.
-    """
-
-    
     def __init__(self, time_col='index'):
         self.time_col = time_col
 
-    
     def get_n_splits(self, X, y=None, groups=None):
-        """Return the number of splitting iterations in the cross-validator.
-
-        Parameters
-        ----------
-        X : pandas.DataFrame
-            Data to split.
-        y : array-like, default=None
-            Always ignored, exists for compatibility.
-        groups : array-like, default=None
-            Always ignored, exists for compatibility.
-
-        Returns
-        -------
-        n_splits : int
-            Number of splits.
-        """
         if self.time_col == 'index':
             dates = X.index
         else:
@@ -210,26 +143,7 @@ class MonthlySplit(BaseCrossValidator):
         unique_months = dates.to_period('M').unique()
         return max(0, len(unique_months) - 1)
 
-    
     def split(self, X, y=None, groups=None):
-        """Generate indices to split data into training and test set.
-
-        Parameters
-        ----------
-        X : pandas.DataFrame
-            Data to split.
-        y : array-like, default=None
-            Always ignored, exists for compatibility.
-        groups : array-like, default=None
-            Always ignored, exists for compatibility.
-
-        Yields
-        ------
-        train : ndarray
-            The training set indices for that split.
-        test : ndarray
-            The testing set indices for that split.
-        """
         if self.time_col == 'index':
             dates = X.index
         else:
@@ -261,3 +175,4 @@ class MonthlySplit(BaseCrossValidator):
             idx_test = np.where(test_mask)[0]
 
             yield idx_train, idx_test
+
