@@ -67,14 +67,6 @@ to compute distances between 2 sets of samples.
 This module provides a custom K-Nearest Neighbors classifier and a
 time-based cross-validation splitter.
 """
-
-"""Assignment - making a sklearn estimator and cv splitter.
-
-The goal of this assignment is to implement:
-- a scikit-learn estimator for KNearestNeighbors classification.
-- a scikit-learn cross-validation splitter based on monthly time periods.
-"""
-
 import numpy as np
 import pandas as pd
 
