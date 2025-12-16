@@ -63,12 +63,6 @@ Hints
 from sklearn.metrics.pairwise import pairwise_distances
 to compute distances between 2 sets of samples.
 """
-"""Custom scikit-learn utilities.
-
-This module provides a custom K-Nearest Neighbors classifier and a
-time-based cross-validation splitter.
-"""
-
 import numpy as np
 import pandas as pd
 
@@ -83,16 +77,14 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
     """K-Nearest Neighbors classifier.
 
     A simple k-nearest neighbors classifier using Euclidean distance.
+
+    Parameters
+    ----------
+    n_neighbors : int, default=1
+        Number of neighbors to use for prediction.
     """
 
     def __init__(self, n_neighbors=1):
-        """Initialize the KNN classifier.
-
-        Parameters
-        ----------
-        n_neighbors : int, default=1
-            Number of neighbors to use for prediction.
-        """
         self.n_neighbors = n_neighbors
 
     def fit(self, X, y):
@@ -106,7 +98,7 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         return self
 
     def predict(self, X):
-        """Predict class labels for the provided data."""
+        """Predict the class labels for the provided data."""
         check_is_fitted(self)
         X = validate_data(self, X=X, reset=False)
 
@@ -129,20 +121,12 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
 
 
 class MonthlySplit(BaseCrossValidator):
-    """Monthly-based cross-validation splitter."""
+    """MonthlySplit cross-validator."""
 
     def __init__(self, time_col='index'):
-        """Initialize the MonthlySplit cross-validator.
-
-        Parameters
-        ----------
-        time_col : str, default='index'
-            Column containing datetime information or 'index'.
-        """
         self.time_col = time_col
 
     def get_n_splits(self, X, y=None, groups=None):
-        """Return the number of splitting iterations."""
         if self.time_col == 'index':
             dates = X.index
         else:
@@ -160,7 +144,6 @@ class MonthlySplit(BaseCrossValidator):
         return max(0, len(unique_months) - 1)
 
     def split(self, X, y=None, groups=None):
-        """Generate indices to split data into training and test sets."""
         if self.time_col == 'index':
             dates = X.index
         else:
