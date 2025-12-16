@@ -65,18 +65,15 @@ to compute distances between 2 sets of samples.
 """
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator
-from sklearn.base import ClassifierMixin
-from sklearn.model_selection import BaseCrossValidator
 
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.validation import validate_data
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.model_selection import BaseCrossValidator
+from sklearn.utils.validation import check_is_fitted, validate_data
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.metrics.pairwise import pairwise_distances
 
-
 class KNearestNeighbors(ClassifierMixin, BaseEstimator):
-    """KNearestNeighbors classifier.
+    """K-Nearest Neighbors classifier.
 
     A simple k-nearest neighbors classifier using Euclidean distance.
 
@@ -86,10 +83,8 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         Number of neighbors to use for prediction.
     """
 
-
     def __init__(self, n_neighbors=1):
         self.n_neighbors = n_neighbors
-
 
     def fit(self, X, y):
         """Fit the model according to the given training data.
@@ -113,7 +108,6 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         self.y_ = y
         self.n_features_in_ = X.shape[1]
         return self
-
 
     def predict(self, X):
         """Predict the class labels for the provided data.
@@ -142,7 +136,6 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
 
         return y_pred
 
-
     def score(self, X, y):
         """Return the mean accuracy on the given test data and labels.
 
@@ -161,9 +154,8 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         check_is_fitted(self)
         X, y = validate_data(self, X=X, y=y, reset=False)
         return np.mean(self.predict(X) == y)
-    
-    
-    class MonthlySplit(BaseCrossValidator):
+
+class MonthlySplit(BaseCrossValidator):
     """MonthlySplit cross-validator.
 
     Provides train/test indices to split data based on successive months.
@@ -176,10 +168,8 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         Should be of type datetime. If 'index', the DataFrame index is used.
     """
 
-
     def __init__(self, time_col='index'):
         self.time_col = time_col
-
 
     def get_n_splits(self, X, y=None, groups=None):
         """Return the number of splitting iterations in the cross-validator.
@@ -213,7 +203,6 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
         dates = pd.Index(pd.to_datetime(dates))
         unique_months = dates.to_period('M').unique()
         return max(0, len(unique_months) - 1)
-
 
     def split(self, X, y=None, groups=None):
         """Generate indices to split data into training and test set.
@@ -265,5 +254,3 @@ class KNearestNeighbors(ClassifierMixin, BaseEstimator):
             idx_test = np.where(test_mask)[0]
 
             yield idx_train, idx_test
-
-
